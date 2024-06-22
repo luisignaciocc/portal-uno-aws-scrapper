@@ -8,7 +8,7 @@ service: portal-uno-aws-scrapper
 stages:
   default:
     params:
-      tableName: "users-table-${sls:stage}"
+      tableName: "cotization-table-${sls:stage}"
 
 provider:
   name: aws
@@ -25,9 +25,9 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - Fn::GetAtt: [UsersTable, Arn]
+            - Fn::GetAtt: [CotizationTable, Arn]
   environment:
-    USERS_TABLE: ${param:tableName}
+    COTIZATION_TABLE: ${param:tableName}
 
 functions:
   api:
@@ -37,14 +37,14 @@ functions:
 
 resources:
   Resources:
-    UsersTable:
+    CotizationTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: userId
+          - AttributeName: registration_date
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
+          - AttributeName: registration_date
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${param:tableName}
