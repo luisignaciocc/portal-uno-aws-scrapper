@@ -1,4 +1,5 @@
-const puppeteer = require("puppeteer");
+const chromium = require("@sparticuz/chromium");
+const puppeteer = require("puppeteer-core");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
@@ -13,19 +14,19 @@ const docClient = DynamoDBDocumentClient.from(client);
 const COTIZATION_TABLE = process.env.COTIZATION_TABLE;
 
 async function scraperPortalUno() {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-gpu",
-      "--disable-dev-shm-usage",
-      "--single-process",
-    ],
-  });
-  const page = await browser.newPage();
-
+  let browser;
   try {
+    console.log("Launching browser...");
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+
+    const page = await browser.newPage();
+    console.log("Browser launched.");
+
     console.log("Logging in...");
     await page.setViewport({ width: 1280, height: 800 });
     await page.setUserAgent(
@@ -82,7 +83,9 @@ async function scraperPortalUno() {
   } catch (error) {
     console.error("An error occurred while running the script:", error);
   } finally {
-    await browser.close();
+    if (browser !== null && browser !== undefined) {
+      await browser.close();
+    }
   }
 }
 

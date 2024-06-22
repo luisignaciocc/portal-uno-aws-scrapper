@@ -1,8 +1,5 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
 org: luisignaciocc
-# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: portal-uno-aws-scrapper
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: portal-uno-aws-scrapper
 
 stages:
@@ -12,7 +9,8 @@ stages:
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs18.x
+  architecture: x86_64
   iam:
     role:
       statements:
@@ -44,8 +42,10 @@ functions:
       - httpApi: "*"
   scraper:
     handler: scraper.scraper
-    memorySize: 128
-    timeout: 30
+    memorySize: 640
+    timeout: 45
+    layers:
+      - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:45
     events:
       - schedule:
           rate: cron(0 0 ? * 1 *)
