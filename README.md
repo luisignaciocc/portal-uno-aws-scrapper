@@ -1,6 +1,6 @@
 # portal-uno-aws-scrapper
 
-Este repositorio contiene una configuración de Serverless para un servicio que incluye dos funciones principales: una API para consultar cotizaciones almacenadas en DynamoDB y un scraper que extrae información de un portal web y almacena los datos en DynamoDB.
+Este repositorio contiene una configuración de Serverless para un servicio que incluye dos funciones principales: una API para consultar cotizaciones almacenadas en DynamoDB y un scraper que extrae información del portal web de AFP Uno (Chile) y almacena los datos en DynamoDB.
 
 ## Estructura del Proyecto
 
