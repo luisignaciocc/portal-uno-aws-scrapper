@@ -29,6 +29,13 @@ provider:
   environment:
     COTIZATION_TABLE: ${param:tableName}
 
+package:
+  exclude:
+    - node_modules/@aws-sdk/**
+    - .git/**
+    - README.md
+    - package-lock.json
+
 functions:
   api:
     handler: handler.handler
