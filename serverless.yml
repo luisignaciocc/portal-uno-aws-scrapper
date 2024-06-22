@@ -32,8 +32,20 @@ provider:
 functions:
   api:
     handler: handler.handler
+    memorySize: 128
     events:
       - httpApi: "*"
+  scraper:
+    handler: scraper.scraper
+    memorySize: 128
+    timeout: 30
+    events:
+      - schedule:
+          rate: cron(0 0 ? * 1 *)
+          description: "Runs every week"
+    environment:
+      USERNAME_SCRAPER: ${env:USERNAME_SCRAPER}
+      PASSWORD_SCRAPER: ${env:PASSWORD_SCRAPER}
 
 resources:
   Resources:
