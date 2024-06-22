@@ -43,12 +43,12 @@ functions:
   scraper:
     handler: scraper.scraper
     memorySize: 640
-    timeout: 45
+    timeout: 60
     layers:
       - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:45
     events:
       - schedule:
-          rate: cron(0 0 ? * 1 *)
+          rate: cron(0 0 1 * ? *)
           description: "Runs every week"
     environment:
       USERNAME_SCRAPER: ${env:USERNAME_SCRAPER}
