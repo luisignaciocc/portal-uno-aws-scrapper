@@ -58,28 +58,16 @@ async function scraperPortalUno() {
 
     const currentDate = new Date().toISOString().split("T")[0];
 
-    const params = {
+    const putParams = {
       TableName: COTIZATION_TABLE,
-      Key: { registration_date: currentDate },
+      Item: {
+        registration_date: currentDate,
+        balance: balance,
+      },
     };
-
-    const command = new ScanCommand(params);
-    const { Items } = await docClient.send(command);
-
-    if (Items && Items.length > 0) {
-      console.log("Record already exists:", currentDate);
-    } else {
-      const putParams = {
-        TableName: COTIZATION_TABLE,
-        Item: {
-          registration_date: currentDate,
-          balance: balance,
-        },
-      };
-      const putCommand = new PutCommand(putParams);
-      await docClient.send(putCommand);
-      console.log("New record created:", currentDate);
-    }
+    const putCommand = new PutCommand(putParams);
+    await docClient.send(putCommand);
+    console.log("New record created:", currentDate);
   } catch (error) {
     console.error("An error occurred while running the script:", error);
   } finally {
