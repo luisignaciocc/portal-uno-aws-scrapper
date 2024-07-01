@@ -17,14 +17,15 @@ app.use(express.json());
 app.get("/cotization/latest", async (req, res) => {
   const params = {
     TableName: COTIZATION_TABLE,
-    ScanIndexForward: false,
-    Limit: 1,
   };
 
   try {
     const command = new ScanCommand(params);
     const { Items } = await docClient.send(command);
     if (Items && Items.length > 0) {
+      Items.sort((a, b) =>
+        b.registration_date.localeCompare(a.registration_date)
+      );
       const { registration_date, balance } = Items[0];
       res.json({ registration_date, balance });
     } else {
