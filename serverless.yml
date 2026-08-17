@@ -1,12 +1,10 @@
 org: luisignaciocc
 app: portal-uno-aws-scrapper
 service: portal-uno-aws-scrapper
-
 stages:
   default:
     params:
       tableName: "cotization-table-${sls:stage}"
-
 provider:
   name: aws
   runtime: nodejs18.x
@@ -26,14 +24,12 @@ provider:
             - Fn::GetAtt: [CotizationTable, Arn]
   environment:
     COTIZATION_TABLE: ${param:tableName}
-
 package:
   exclude:
     - node_modules/@aws-sdk/**
     - .git/**
     - README.md
     - package-lock.json
-
 functions:
   api:
     handler: handler.handler
@@ -51,9 +47,16 @@ functions:
           rate: cron(0 0 1 * ? *)
           description: "Runs every 1st of month"
     environment:
-      USERNAME_SCRAPER: ${env:USERNAME_SCRAPER}
-      PASSWORD_SCRAPER: ${env:PASSWORD_SCRAPER}
-
+      # Antes: ${env:USERNAME_SCRAPER} / ${env:PASSWORD_SCRAPER}
+      # Esos solo funcionan si corres "serverless deploy" desde una shell
+      # donde exportaste esas variables tú mismo. El CI/CD del Dashboard
+      # corre en la infraestructura de Serverless, no en tu shell, así que
+      # ahí esas variables nunca existirían.
+      # Ahora usan ${param:} que resuelve, en orden: --param CLI, stages en
+      # este archivo, y finalmente los Parameters guardados en el Dashboard
+      # (app.serverless.com > Settings > Parameters, encriptados).
+      USERNAME_SCRAPER: ${param:usernameScraper}
+      PASSWORD_SCRAPER: ${param:passwordScraper}
 resources:
   Resources:
     CotizationTable:
