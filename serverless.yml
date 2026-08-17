@@ -38,8 +38,8 @@ functions:
       - httpApi: "*"
   scraper:
     handler: scraper.scraper
-    memorySize: 640
-    timeout: 60
+    memorySize: 1024
+    timeout: 120
     layers:
       - arn:aws:lambda:us-east-1:764866452798:layer:chrome-aws-lambda:45
     events:
@@ -47,6 +47,14 @@ functions:
           rate: cron(0 0 1 * ? *)
           description: "Runs every 1st of month"
     environment:
+      # Antes: ${env:USERNAME_SCRAPER} / ${env:PASSWORD_SCRAPER}
+      # Esos solo funcionan si corres "serverless deploy" desde una shell
+      # donde exportaste esas variables tú mismo. El CI/CD del Dashboard
+      # corre en la infraestructura de Serverless, no en tu shell, así que
+      # ahí esas variables nunca existirían.
+      # Ahora usan ${param:} que resuelve, en orden: --param CLI, stages en
+      # este archivo, y finalmente los Parameters guardados en el Dashboard
+      # (app.serverless.com > Settings > Parameters, encriptados).
       USERNAME_SCRAPER: ${param:usernameScraper}
       PASSWORD_SCRAPER: ${param:passwordScraper}
 resources:
