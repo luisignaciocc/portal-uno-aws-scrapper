@@ -132,6 +132,27 @@ async function scraperPortalUno() {
     );
     console.log("Successful login.");
 
+    // El monto se muestra primero como "$0" (placeholder) mientras carga de
+    // forma asíncrona (probablemente un fetch posterior al login), y luego
+    // se actualiza al valor real. Si leemos apenas aparece la etiqueta
+    // "Total ahorrado", capturamos el $0 en vez del saldo real. Esperamos
+    // explícitamente a que el span tenga dígitos distintos de "0".
+    await page.waitForFunction(
+      () => {
+        const label = Array.from(document.querySelectorAll("p")).find((el) =>
+          el.textContent.includes("Total ahorrado")
+        );
+        if (!label) return false;
+        const container = label.closest("div");
+        const span = container ? container.querySelector("span") : null;
+        if (!span) return false;
+        const digits = span.textContent.replace(/[^0-9]/g, "");
+        return digits.length > 0 && digits !== "0";
+      },
+      { timeout: 30000 }
+    );
+    console.log("Balance loaded (no longer placeholder).");
+
     const balanceText = await page.evaluate(() => {
       const label = Array.from(document.querySelectorAll("p")).find((el) =>
         el.textContent.includes("Total ahorrado")
