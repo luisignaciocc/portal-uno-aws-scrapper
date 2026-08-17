@@ -34,9 +34,17 @@ async function scraperPortalUno() {
     // El sitio ahora redirige "https://portal.uno.cl/login" a la home
     // "https://www.uno.cl/". Hay que entrar por la home y hacer click en el
     // botón "UNOnline" para llegar al formulario de login.
+    //
+    // Usamos "domcontentloaded" en vez de "networkidle0": la home tiene
+    // analytics/chat/pixels de marketing que hacen requests en background
+    // continuamente, así que "networkidle0" puede no cumplirse nunca y
+    // colgar la navegación hasta su propio timeout de 60s (todo el
+    // presupuesto del Lambda en un solo paso). El waitForFunction de abajo
+    // ya se encarga de esperar a que React termine de hidratar el botón,
+    // así que no necesitamos esperar la red completa aquí.
     await page.goto("https://www.uno.cl/", {
-      timeout: 60000,
-      waitUntil: "networkidle0",
+      timeout: 30000,
+      waitUntil: "domcontentloaded",
     });
     console.log("Home page loaded.");
 
@@ -50,12 +58,29 @@ async function scraperPortalUno() {
         ),
       { timeout: 30000 }
     );
-    await page.evaluate(() => {
-      const btn = Array.from(document.querySelectorAll("button")).find((b) =>
-        b.textContent.includes("UNOnline")
+
+    // Usamos un click real de Puppeteer (simula mousedown/mouseup/click)
+    // en vez de invocar btn.click() por JS. Es más fiel a lo que hace un
+    // usuario real y evita posibles diferencias con componentes de Ant
+    // Design que dependen de la secuencia completa de eventos de mouse.
+    const [unoOnlineButton] = await page.$x(
+      "//button[contains(., 'UNOnline')]"
+    );
+    if (!unoOnlineButton) {
+      throw new Error("No se encontró el botón 'UNOnline' en la home.");
+    }
+    try {
+      await unoOnlineButton.click();
+    } catch (clickError) {
+      // Si algo tapa visualmente el botón (ej. un banner de cookies), el
+      // click real de Puppeteer puede fallar. Como respaldo, disparamos el
+      // evento por JS directamente sobre el elemento.
+      console.log(
+        "Real click failed, falling back to programmatic click:",
+        clickError.message
       );
-      btn.click();
-    });
+      await page.evaluate((el) => el.click(), unoOnlineButton);
+    }
 
     // El click NO navega a otra URL: abre un panel deslizable (slideout/drawer)
     // dentro de la misma página que contiene el formulario de login. Por eso
