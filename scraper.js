@@ -59,13 +59,20 @@ async function scraperPortalUno() {
       { timeout: 30000 }
     );
 
+    // Usamos evaluateHandle (API estable, no depende de page.$x que fue
+    // removido en versiones recientes de Puppeteer) para ubicar el botón
+    // por su texto y obtener un ElementHandle real sobre el que hacer click.
+    const unoOnlineHandle = await page.evaluateHandle(() =>
+      Array.from(document.querySelectorAll("button")).find((b) =>
+        b.textContent.includes("UNOnline")
+      )
+    );
+    const unoOnlineButton = unoOnlineHandle.asElement();
+
     // Usamos un click real de Puppeteer (simula mousedown/mouseup/click)
     // en vez de invocar btn.click() por JS. Es más fiel a lo que hace un
     // usuario real y evita posibles diferencias con componentes de Ant
     // Design que dependen de la secuencia completa de eventos de mouse.
-    const [unoOnlineButton] = await page.$x(
-      "//button[contains(., 'UNOnline')]"
-    );
     if (!unoOnlineButton) {
       throw new Error("No se encontró el botón 'UNOnline' en la home.");
     }
